@@ -1,0 +1,17 @@
+# Personal LifeOS data
+data/*.json
+
+# Python generated files
+__pycache__/
+*.pyc
+
+# Virtual environments
+venv/
+.venv/
+
+# Environment variables / secrets
+.env
+
+# IDE folders
+.vscode/
+.idea/
