@@ -41,7 +41,7 @@ class Spending(Transaction):
             "amount" : self.amount,
             "date" : self.date.isoformat(),
             "category" : self.category,
-            "discription" : self.description
+            "description" : self.description
         }    
 
     @classmethod
@@ -72,7 +72,7 @@ class FinanceManager:
 
     def load_finance(self):
         try:
-            with open("data/finance.json", "r") as file:
+            with open(DATA_FILE, "r") as file:
                 finance_data = json.load(file)
 
             self.incomes = []
@@ -91,6 +91,8 @@ class FinanceManager:
             self.spendings = []    
 
     def add_income(self, amount):
+        if amount <= 0:
+            raise ValueError("amount must be greater than 0")
         income = Income(amount)
 
         self.incomes.append(income)
@@ -99,13 +101,15 @@ class FinanceManager:
     def add_spending(self, amount, category, description):
         category = category.lower().strip()
 
-        if category in self.categories:
-            spending = Spending(amount, category, description)
-            self.spendings.append(spending)
-            self.save_finance()
-            return True
+        if amount <= 0:
+            raise ValueError("amount must be greater than 0")
 
-        return False
+        if category not in self.categories:
+            raise ValueError(f"invalid category: {category}")
+
+        spending = Spending(amount, category, description)
+        self.spendings.append(spending)
+        self.save_finance()
 
 
     def get_balance(self):
@@ -170,7 +174,7 @@ class FinanceManager:
             "spendings" : spending_data
         }
         
-        with open("data/finance.json", "w") as file:
+        with open(DATA_FILE, "w") as file:
             json.dump(finance_data,file , indent=4)               
 
 

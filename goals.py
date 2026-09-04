@@ -110,12 +110,12 @@ class GoalManager:
         for goal in self.goals:
             goals_data.append(goal.to_dict())
 
-        with open("data/goals.json", "w") as file:
+        with open(DATA_FILE, "w") as file:
             json.dump(goals_data, file, indent=4)
 
     def load_goals(self):
         try:
-            with open("data/goals.json", "r") as file:
+            with open(DATA_FILE, "r") as file:
                 goals_data = json.load(file)
                 self.goals = []  # clear list before loading
 

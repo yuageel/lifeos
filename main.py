@@ -94,40 +94,37 @@ while True:
             if option_3 == "1":
                 try:
                     amount = float(input("income amount: "))
-
-                    if amount > 0:
-                        finance_manager.add_income(amount)
-                        print("income added successfully")
-                    else:
-                        print("amount must be greater than 0")
-
                 except ValueError:
                     print("please enter a valid number")
+                    continue
+
+                try:
+                    finance_manager.add_income(amount)
+                    print("income added successfully")
+                except ValueError as error:
+                    print(error)
 
 
             elif option_3 == "2":
                 try:
                     amount = float(input("spending amount: "))
-
-                    if amount <= 0:
-                        print("amount must be greater than 0")
-                        continue
-
-                    print("\nAvailable categories:")
-                    for category in finance_manager.categories:
-                        print(f"- {category}")
-
-                    category = input("category: ").lower().strip()
-                    description = str(input("description: "))
-
-                    finance_manager.add_spending(
-                        amount,
-                        category,
-                        description
-                    )
-
                 except ValueError:
                     print("please enter a valid number")
+                    continue
+
+                print("\nAvailable categories:")
+                for category in finance_manager.categories:
+                    print(f"- {category}")
+
+                category = input("category: ")
+                description = input("description: ")
+
+                try:
+                    finance_manager.add_spending(amount, category, description)
+                    print("spending added successfully")
+                except ValueError as error:
+                    print(error)
+
 
 
             elif option_3 == "3":
