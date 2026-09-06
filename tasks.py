@@ -1,175 +1,125 @@
 from datetime import datetime
 import json
+
 from pathlib import Path
-
-
-
 DATA_FILE = Path(__file__).parent / "data" / "tasks.json"
 DATA_FILE.parent.mkdir(exist_ok=True)
 
 
-
-def load_tasks():
-    try:
-        with open(DATA_FILE, "r") as file:
-            return json.load(file)
-    except (FileNotFoundError, json.JSONDecodeError) :
-        return []
-
-    
-tasks = load_tasks()
-priorities = ["low","medium","high"]
-
-def add_task():
-    new_task = input("enter task title: ")
-    while True:
-        try:
-            task_deadline = input("enter task deadline (YYYY-MM-DD):").strip()
-            datetime.strptime(task_deadline, "%Y-%m-%d")
-            break
-        except ValueError:
-            print("invalid input")    
-
-    while True:
-        task_priority = input("enter priority (low/medium/high): ").lower().strip()
-        if task_priority in priorities:
-            break
-        else:
-            print("invalid priority!")
-
-    tasks.append({
-                "title" : new_task ,
-                 "completed" : False,
-                 "priority" : task_priority,
-                 "deadline" : task_deadline
-                 })
-    save_tasks()
-    
-    print("task added successfully")
+class Tasks:
+    def __init__(self, title , deadline, priority):
+        self.title = title
+        self.deadline = deadline
+        self.priority = priority
+        self.completed = False
 
 
-def view_tasks():
-    if len(tasks) == 0:
-        print("No tasks found.")
-    else:
-        today = datetime.today().date()
-        for index, task in enumerate(tasks, start=1):
-            deadline = datetime.strptime(task["deadline"], "%Y-%m-%d").date()
-            if task["completed"]:
-                print(f"{index} - [x] {task['title']} | deadline: {task['deadline']} | priority: {task['priority']}")
-            elif deadline <  today:
-                print(f"{index} - [ ] {task['title']} | deadline: {task['deadline']} | priority: {task['priority']} | OVERDUE")   
-            else:
-                print(f"{index} - [ ] {task['title']} | deadline: {task['deadline']} | priority: {task['priority']}")
+class TaskManager:
 
-
-def complete_task():
-    if len(tasks) == 0:
-        print("No tasks available")
-    else:    
-        view_tasks()
-        while True:
+    def load_tasks(self):
             try:
-                task_number = int(input("which task number: "))
-                if 1 <= task_number <= len(tasks):
-                    task_number -= 1
-                    tasks[task_number]["completed"] = True
-                    save_tasks()
-                    print("task set to complete")
-                    break
-                else:
-                    print("No task found")
-            except ValueError:
-                print("cannot type a string")
-
-def delete_task():
-    if len(tasks) == 0:
-        print("No tasks available")
-    else:    
-        view_tasks()
-        while True:
-            try:
-                task_number = int(input("which task do you want to delete : "))
-                if 1 <= task_number <= len(tasks):
-                    task_number -= 1
-                    tasks.pop(task_number)
-                    save_tasks()
-                    print("task deleted")
-                    break
-                else:
-                    print("no task found")
-            except ValueError:
-                print("cannot type a string")
-
-def edit_task():
-    if len(tasks) == 0:
-        print("no tasks available")
-    else:
+                with open(DATA_FILE, "r") as file:
+                    self.tasks = json.load(file)
+            except (FileNotFoundError, json.JSONDecodeError) :
+                self.tasks = []        
             
-        while True:
-            view_tasks()
-            try:
-                task_number = int(input("which task do you want to edit ( 0 to cancel): "))
-                if 1 <= task_number <= len(tasks):
-                    task_number -= 1
-                    
-                    print("1 - edit title")
-                    print("2 - edit deadline")
-                    print("3 - edit priority")
-                    print("0 - go back")
-                    while True:
-                        try:
-                            part = int(input("which part would you like to edit: "))
-                            if part == 1:
-                                tasks[task_number]["title"] = input("enter new task title: ")
-                                save_tasks()
-                                print("title updated!")
-                                return
-                            elif part == 2:
-                                while True:
-                                    try:
-                                        new_deadline = input("enter NEW task deadline (YYYY-MM-DD): ").strip()
-                                        datetime.strptime(new_deadline, "%Y-%m-%d")
-                                        tasks[task_number]["deadline"] = new_deadline
-                                        save_tasks()
-                                        print("deadline updated")
-                                        return
-                                    except ValueError:
-                                        print("invalid input")
-                                 
+    def __init__(self):
+        self.tasks = []
+        self.priorities = ["high" , "medium" , "low"]
+        self.load_tasks()
 
-                            elif part == 3:
-                                while True:
-                                    new_priority = input("enter priority (low/medium/high): ").lower().strip()
-                                    if new_priority in priorities:
-                                        tasks[task_number]["priority"] = new_priority
-                                        save_tasks()
-                                        print("priority updated")
-                                        return
-                                    else:
-                                         print("invalid priority!")
+    def save_tasks(self):
+        with open(DATA_FILE , "w") as file:
+            json.dump(self.tasks , file , indent=4)
 
-                            elif part == 0 :
-                                return
+    def _check_index(self ,index):
+        if index < 0 or index >= len(self.tasks):
+            raise ValueError(f"no task at index {index}")
+   
 
-                            else:
-                                print("invalid option")
-                        except ValueError:
-                            print("cannot type a string")
+    def add_task(self, title, deadline, priority):
+        title = title.strip()
+        deadline = deadline.strip()
+        priority = priority.lower().strip()
 
-                elif task_number == 0:
-                    return
-                else:
-                    print("no task found")
-            except ValueError:
-                    print("cannot type a string")    
+        if not title:
+            raise ValueError("title cannot be empty")
 
-    
+        try:
+            datetime.strptime(deadline, "%Y-%m-%d")
+        except ValueError:
+            raise ValueError(f"invalid deadline: {deadline} (expected YYYY-MM-DD)")
 
+        if priority not in self.priorities:
+            raise ValueError(f"invalid priority: {priority} (expected low, medium, or high)")
         
 
+        self.tasks.append({
+                "title" : title,
+                "deadline" : deadline,
+                "priority" : priority,
+                "completed" : False
+            })
+        self.save_tasks()
+
+    def get_tasks(self):
+        return self.tasks
+
+    def view_tasks(self):
+        if len(self.tasks) == 0:
+            print("No tasks found.")
+        else:
+            today = datetime.today().date()
+            for index, task in enumerate(self.tasks, start=1):
+                deadline = datetime.strptime(task["deadline"], "%Y-%m-%d").date()
+                if task["completed"]:
+                    print(f"{index} - [x] {task['title']} | deadline: {task['deadline']} | priority: {task['priority']}")
+                elif deadline <  today:
+                    print(f"{index} - [ ] {task['title']} | deadline: {task['deadline']} | priority: {task['priority']} | OVERDUE")   
+                else:
+                    print(f"{index} - [ ] {task['title']} | deadline: {task['deadline']} | priority: {task['priority']}")
 
 
-def save_tasks():
-    with open(DATA_FILE, "w") as file:
-        json.dump(tasks, file, indent=4)
+    def complete_task(self, index):
+        self._check_index(index)
+
+        self.tasks[index]["completed"] = True
+        self.save_tasks()
+
+    def delete_task(self , index):
+        self._check_index(index)
+
+        self.tasks.pop(index) 
+        self.save_tasks() 
+
+    def edit_title(self , index, new_title):
+        self._check_index(index)
+        if not new_title:
+            raise ValueError("title cannot be empty")
+
+        self.tasks[index]["title"] = new_title
+        self.save_tasks()
+
+    def edit_deadline(self , index , new_deadline):
+        self._check_index(index)
+        new_deadline = new_deadline.strip()
+
+        try:
+            datetime.strptime(new_deadline, "%Y-%m-%d")
+        except ValueError:
+            raise ValueError(f"invalid deadline: {new_deadline} (expected YYYY-MM-DD)")
+
+        self.tasks[index]["deadline"] = new_deadline
+        self.save_tasks()
+
+    def edit_priority(self , index , new_priority):
+        self._check_index(index)
+        new_priority = new_priority.lower().strip()
+
+        if new_priority not in self.priorities:
+            raise ValueError(f"invalid priority: {new_priority} (expected low, medium, or high)")
+
+        self.tasks[index]["priority"] = new_priority
+        self.save_tasks()
+
+     

@@ -1,9 +1,32 @@
-from tasks import add_task , view_tasks ,complete_task, delete_task, edit_task
+from tasksoop import TaskManager
 from goals import GoalManager
 from finance import FinanceManager
 
 goal_manager = GoalManager()
 finance_manager = FinanceManager()
+task_manager = TaskManager()
+
+
+def ask_task_index(task_manager):
+    """Show tasks and get a valid 0-based index. Returns None if cancelled."""
+    task_manager.view_tasks()
+
+    while True:
+        answer = input("which task? (0 to cancel) ").strip()
+
+        if not answer.isdigit():
+            print("please enter a number")
+            continue
+
+        number = int(answer)
+
+        if number == 0:
+            return None
+
+        if 1 <= number <= len(task_manager.get_tasks()):
+            return number - 1
+
+        print("no task with that number")
 
 # main loop
 while True:
@@ -27,28 +50,96 @@ while True:
             option_1 = input("choose an option: ")
 
             if option_1 == "1":
-                add_task()
+                while True:
+                    title = input("title: ")
+                    deadline = input("deadline (YYYY-MM-DD): ")
+                    priority = input("priority (high/medium/low): ")
+                    try:
+                        task_manager.add_task(title , deadline, priority)
+                        print("task added")
+                        break
+                    except ValueError as error:
+                        print(error)    
 
             elif option_1 == "2":
-                print("------------TASKS--------------")
-                view_tasks()
-                print("--------------------------------")
+                task_manager.view_tasks()
 
             elif option_1 == "3":
-                complete_task()
-                
+                if not task_manager.get_tasks():
+                    print("no tasks available")
+                    continue
+
+                index = ask_task_index(task_manager)
+
+                if index is not None:
+                    task_manager.complete_task(index)
+                    print("task completed")
+                            
             elif option_1 == "4":
-                delete_task()
+                if not task_manager.get_tasks():
+                    print("no tasks available")
+                    continue
+
+                index = ask_task_index(task_manager)
+
+                if index is not None:
+                    task_manager.delete_task(index)
+                    print("task deleted")
 
             elif option_1 == "5":
-                edit_task()
-                              
+                if not task_manager.get_tasks():
+                    print("no tasks available")
+                    continue
+
+                index = ask_task_index(task_manager)
+
+                if index is None:
+                    continue
+
+                print("1 - edit title")
+                print("2 - edit deadline")
+                print("3 - edit priority")
+                print("0 - cancel")
+
+                field = input("which field? ")
+
+                if field == "1":
+                    new_title = input("new title: ")
+                    try:
+                        task_manager.edit_title(index, new_title)
+                        print("title updated")
+                    except ValueError as error:
+                        print(error)
+
+                elif field == "2":
+                    new_deadline = input("new deadline (YYYY-MM-DD): ")
+                    try:
+                        task_manager.edit_deadline(index, new_deadline)
+                        print("deadline updated")
+                    except ValueError as error:
+                        print(error)
+
+                elif field == "3":
+                    new_priority = input("new priority (high/medium/low): ")
+                    try:
+                        task_manager.edit_priority(index, new_priority)
+                        print("priority updated")
+                    except ValueError as error:
+                        print(error)
+
+                elif field == "0":
+                    print("cancelled")
+
+                else:
+                    print("invalid option")
+                                        
             elif option_1 == "0":
                 print("going back")
                 break        
             else:
                 print("invalid option")
-    # Goals menu
+
+   # Goals menu
     elif option == "2":
         while True:
             print("1 - add goal")
