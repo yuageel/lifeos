@@ -1,10 +1,14 @@
-from tasksoop import TaskManager
+from tasks import TaskManager
 from goals import GoalManager
 from finance import FinanceManager
+from assistant import Assistant
+import requests
 
 goal_manager = GoalManager()
 finance_manager = FinanceManager()
 task_manager = TaskManager()
+
+assistant = Assistant(finance_manager, task_manager)
 
 
 def ask_task_index(task_manager):
@@ -34,6 +38,7 @@ while True:
     print("1 - tasks.")
     print("2 - goals.")
     print("3 - finance.")
+    print("4 - assistant.")
     print("0 - exit .")
 
     option = input("choose an option: ")
@@ -238,7 +243,17 @@ while True:
 
             else:
                 print("invalid option")
-        
+
+    elif option == "4":
+        print("type a message, or 'back' to return")
+        while True:
+            message = input("> ")
+            if message.lower().strip() == "back":
+                break
+            try:
+                assistant.handle_message(message)            
+            except requests.RequestException as error:
+                print(f"connection problem: {error}")
     #exit
     elif option == "0":
         print("exit")
