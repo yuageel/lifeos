@@ -8,6 +8,18 @@ I am building this project while learning software engineering and AI engineerin
 
 The current version is a command-line application with JSON persistence.
 
+## Architecture
+
+LifeOS separates business logic from interfaces.
+
+**Managers** (`TaskManager`, `FinanceManager`, `GoalManager`) own all data
+and validation. They take parameters, raise `ValueError` on invalid input,
+and persist to JSON. They never print or read input.
+
+**Interfaces** (`main.py`, `assistant.py`) handle presentation. They collect
+input, catch errors from the managers, and display results.
+
+
 ### Features
 
 #### Tasks
@@ -39,6 +51,7 @@ The current version is a command-line application with JSON persistence.
 - JSON
 - Object-Oriented Programming
 - Git
+- AI-powered features
 
 ## Roadmap
 
@@ -49,4 +62,3 @@ Future versions will explore:
 - SQL databases
 - FastAPI
 - Web frontend
-- AI-powered features
